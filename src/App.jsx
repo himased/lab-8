@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import {v4} from 'uuid';
 import axios from 'axios';
 import { BrowserRouter as Router, Route } from 'react-router-dom';
-
+import firebase from './firebase/firebase'
 import Header from './components/Header';
 import AddTransaction from './components/AddTransaction';
 import Balance from './components/Balance';
@@ -51,11 +51,18 @@ export default class App extends Component {
 
   loadJsonData = () => {
     // get data from json file: "public/static/data.json"
-    axios.get('/static/data.json')
+    /*axios.get('/static/data.json')
       .then( res => {
         const data = res.data;
         this.setState( { transactions: data } );
-      });
+      }); */
+      firebase.firestore().collection('data').onSnapshot(items => {
+        const transaction = [] //array type
+        items.forEach( res => {
+          transaction.push(res.data())
+        })
+        this.setState({transactions:transaction})
+      })
   }
 
   componentDidMount() {
@@ -89,9 +96,10 @@ export default class App extends Component {
       id: v4(),
       name,
       amount: +amount,
-      date: new Date()
+      date: new Date().getTime()
     }
 
+    firebase.firestore().collection('data').add(newTransaction)
     this.state.transactions.unshift(newTransaction);
     this.setState( { transactions: this.state.transactions } );
   }
@@ -99,6 +107,11 @@ export default class App extends Component {
   clearTransactions = () => {
     let ans = window.confirm("You are going to clear all transaction history!!!")
     if (ans) {
+      firebase.firestore().collection('data').get().then(function(Snapshot){
+        Snapshot.forEach(function(doc){
+          doc.ref.delete()
+        })
+      })
       this.setState( { transactions: [] } );
     }
   }
