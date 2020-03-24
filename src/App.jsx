@@ -50,12 +50,6 @@ export default class App extends Component {
   }
 
   loadJsonData = () => {
-    // get data from json file: "public/static/data.json"
-    /*axios.get('/static/data.json')
-      .then( res => {
-        const data = res.data;
-        this.setState( { transactions: data } );
-      }); */
       firebase.firestore().collection('data').onSnapshot(items => {
         const transaction = [] //array type
         items.forEach( res => {
@@ -122,7 +116,7 @@ export default class App extends Component {
       <div className="container mt-4 mb-5">
         <Header />
 
-        <Route exact path="/" render={ props => (
+        <Route exact path="/lab8-expense-1" render={ props => (
           <div>
           <AddTransaction addTransaction={this.addTransaction} />
           <Balance transactions={this.state.transactions}/>
